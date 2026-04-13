@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Becky Button</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #fff;
+      font-family: sans-serif;
+      min-height: 100vh;
+    }
+
+    .page {
+      max-width: 1165px;
+      margin: 0 auto;
+      padding: clamp(24px, 6vw, 80px) clamp(16px, 5vw, 60px);
+    }
+
+    /* ---- Header ---- */
+    .site-header {
+      margin-bottom: clamp(12px, 2.5vw, 32px);
+    }
+
+    .name {
+      font-family: 'Baskerville', 'Palatino Linotype', serif;
+      font-size: clamp(36px, 8.5vw, 96px);
+      font-weight: normal;
+      color: #000;
+      line-height: 1.05;
+    }
+
+    .role {
+      font-family: 'Futura', 'Century Gothic', sans-serif;
+      font-size: clamp(13px, 1.8vw, 24px);
+      font-weight: 500;
+      color: #000;
+      letter-spacing: 0.05em;
+      margin-top: 0.15em;
+    }
+
+    /* ---- Shelf ---- */
+    /* The shelf image is 817×899 — we lock that aspect ratio so items
+       positioned in % always land in the right shelf compartments */
+    .shelf {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 817 / 899;
+      overflow: hidden;
+    }
+
+    /* Replicate the exact Figma crop: the shelf image is larger than its
+       container and positioned with specific offsets — percentages keep
+       this identical at every viewport width. */
+    .shelf-bg {
+      position: absolute;
+      width: 126.32%;
+      height: 114.67%;
+      left: -13.71%;
+      top: -8.4%;
+      pointer-events: none;
+      display: block;
+    }
+
+    /* ---- Project items (% coords relative to shelf) ----
+       All values derived from Figma px positions offset by the shelf origin (348, 288).
+       left%  = (item_left  - 348) / 817
+       top%   = (item_top   - 288) / 899
+       width% = item_width  / 817
+       height%= item_height / 899                          */
+
+    .project-item {
+      position: absolute;
+      cursor: pointer;
+      transition: transform 0.18s ease, filter 0.18s ease;
+    }
+    .project-item:hover {
+      transform: scale(1.07);
+      filter: brightness(1.08) drop-shadow(0 4px 12px rgba(0,0,0,0.18));
+      z-index: 10;
+    }
+    .project-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    /* Silver wearable device — top-left compartment */
+    .proj-device {
+      left:   10.77%;
+      top:     9.5%;    /* pushed down to sit on shelf board */
+      width:  17.38%;
+      height: 25.25%;
+    }
+
+    /* Lamp — top-right compartment, slight rotation */
+    .proj-pickleball {
+      left:   61.20%;
+      top:    14.3%;    /* shorter than puck so needs more offset to reach same board */
+      width:  22.89%;
+      height: 20.36%;   /* 183/899 */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .proj-pickleball .inner {
+      transform: rotate(4.49deg);
+      width: 93%;
+      height: 93%;
+    }
+    .proj-pickleball .inner img { object-fit: cover; }
+
+    /* Twinkle Toes PCB — middle-left compartment */
+    .proj-twinkle {
+      left:   14%;      /* shifted right to clear inner left frame */
+      top:    37.37%;
+      width:  19.71%;
+      height: 26.92%;
+    }
+
+    /* Braille printer — bottom-left */
+    .proj-led {
+      left:   16%;      /* shifted right to clear inner left frame */
+      top:    72.52%;
+      width:  31.09%;   /* 254/817 */
+      height: 15.13%;   /* 136/899 */
+      overflow: hidden;
+    }
+    .proj-led img {
+      position: absolute;
+      width: 106.36%;
+      height: 166.31%;
+      left: -6.36%;
+      top: -38.35%;
+      object-fit: cover;
+    }
+
+    /* Tea app — bottom-right */
+    .proj-tea {
+      left:   54.59%;   /* (794-348)/817 */
+      top:    70.08%;   /* (918-288)/899 */
+      width:  33.78%;   /* 276/817 */
+      height: 17.57%;   /* 158/899 */
+      overflow: hidden;
+    }
+    .proj-tea img {
+      position: absolute;
+      width: 100%;
+      height: 109.97%;
+      left: 0;
+      top: -9.97%;
+    }
+
+    /* ---- Modal ---- */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.55);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .modal-overlay.open { display: flex; }
+
+    .modal {
+      background: #fff;
+      border-radius: 4px;
+      max-width: 560px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: clamp(24px, 5vw, 44px);
+      position: relative;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.18);
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 14px;
+      right: 18px;
+      background: none;
+      border: none;
+      font-size: 22px;
+      cursor: pointer;
+      color: #555;
+      line-height: 1;
+      padding: 4px;
+    }
+    .modal-close:hover { color: #000; }
+
+    .modal-image {
+      width: 100%;
+      max-height: 220px;
+      object-fit: contain;
+      margin-bottom: 20px;
+      display: block;
+    }
+
+    .modal-title {
+      font-family: 'Baskerville', 'Palatino Linotype', serif;
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: normal;
+      color: #000;
+      margin-bottom: 8px;
+    }
+
+    .modal-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+    .modal-tag {
+      font-family: 'Futura', 'Century Gothic', sans-serif;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #666;
+      border: 1px solid #ccc;
+      border-radius: 2px;
+      padding: 3px 8px;
+    }
+
+    .modal-desc {
+      font-family: Georgia, 'Times New Roman', serif;
+      font-size: clamp(14px, 2vw, 16px);
+      line-height: 1.65;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+
+<div class="page">
+
+  <header class="site-header">
+    <h1 class="name">Becky Button</h1>
+    <p class="role">Engineer</p>
+  </header>
+
+  <div class="shelf">
+    <img class="shelf-bg" src="15e05ee9c5a6f8ea807161f338e129a3e200f260.png" alt="" />
+
+    <div class="project-item proj-device" data-project="device">
+      <img src="fdf3472b8e5757c0d00891bfd23f6e26236eea90.png" alt="Wearable device" />
+    </div>
+
+    <div class="project-item proj-pickleball" data-project="pickleball">
+      <div class="inner">
+        <img src="c52bd55dc40f4c41d59558c739b89c67c72d1523.png" alt="Pickleball sensor" />
+      </div>
+    </div>
+
+    <div class="project-item proj-twinkle" data-project="twinkle">
+      <img src="2e9c956df68310be3393d81b1a1d2290e4c0c469.png" alt="Twinkle Toes PCB" />
+    </div>
+
+    <div class="project-item proj-led" data-project="led">
+      <img src="aa6b4d617f01a3a42998798e122c8e8a02d0b8be.png" alt="LED matrix panel" />
+    </div>
+
+    <div class="project-item proj-tea" data-project="tea">
+      <img src="e617713c7713bde361e18ce07e459a3e6f1063e1.png" alt="Tea sourcing app" />
+    </div>
+  </div>
+
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modal-overlay" role="dialog" aria-modal="true">
+  <div class="modal" id="modal">
+    <button class="modal-close" id="modal-close" aria-label="Close">&#x2715;</button>
+    <img class="modal-image" id="modal-image" src="" alt="" />
+    <h2 class="modal-title" id="modal-title"></h2>
+    <div class="modal-tags" id="modal-tags"></div>
+    <p class="modal-desc" id="modal-desc"></p>
+  </div>
+</div>
+
+<script>
+  const projects = {
+    device: {
+      image: "fdf3472b8e5757c0d00891bfd23f6e26236eea90.png",
+      title: "Puck v0 - Era Labs",
+      tags: ["PCB Design"],
+      description: "Designed the PCB for this wearble device "
+    },
+    pickleball: {
+      image: "c52bd55dc40f4c41d59558c739b89c67c72d1523.png",
+      title: "Lamp",
+      tags: ["Fusion 360"],
+      description: "I designed this 3D printed lamp, thats all."
+    },
+    twinkle: {
+      image: "2e9c956df68310be3393d81b1a1d2290e4c0c469.png",
+      title: "Twinkle Toes",
+      tags: ["PCB Design", "Firmware", "Synthesizer"],
+      description: "A foot shaped reprogrammable guitar pedal"
+    },
+    led: {
+      image: "aa6b4d617f01a3a42998798e122c8e8a02d0b8be.png",
+      title: "Braille Printer",
+      tags: ["Design", "Electrical Engineering"],
+      description: ""
+    },
+    tea: {
+      image: "e617713c7713bde361e18ce07e459a3e6f1063e1.png",
+      title: "Embroidery Digitizer",
+      tags: ["Product Design", "UI/UX", "Full-Stack"],
+      description: "An embroidery digitizer that converts designs to embroidery patterns."
+    }
+  };
+
+  const overlay  = document.getElementById("modal-overlay");
+  const modalImg = document.getElementById("modal-image");
+  const modalTitle = document.getElementById("modal-title");
+  const modalTags  = document.getElementById("modal-tags");
+  const modalDesc  = document.getElementById("modal-desc");
+
+  function openModal(key) {
+    const p = projects[key];
+    if (!p) return;
+    modalImg.src = p.image;
+    modalImg.alt = p.title;
+    modalTitle.textContent = p.title;
+    modalDesc.textContent  = p.description;
+    modalTags.innerHTML = p.tags.map(t => `<span class="modal-tag">${t}</span>`).join("");
+    overlay.classList.add("open");
+    document.body.style.overflow = "hidden";
+  }
+
+  function closeModal() {
+    overlay.classList.remove("open");
+    document.body.style.overflow = "";
+  }
+
+  document.querySelectorAll(".project-item").forEach(el => {
+    el.addEventListener("click", () => openModal(el.dataset.project));
+  });
+
+  document.getElementById("modal-close").addEventListener("click", closeModal);
+  overlay.addEventListener("click", e => { if (e.target === overlay) closeModal(); });
+  document.addEventListener("keydown", e => { if (e.key === "Escape") closeModal(); });
+</script>
+
+</body>
+</html>
