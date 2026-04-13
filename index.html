@@ -33,6 +33,20 @@
       padding-top: clamp(20px, 10.4vw, 121px); /* 10.4vw = 121px at 1165px viewport */
     }
 
+    /* 14" MacBook Pro (~1440px+): 30% padding. Shelf width is capped so the
+       full shelf (+ header) fits in the viewport without scrolling.
+       calc: available height minus ~250px of header/spacing, converted to
+       the equivalent shelf width via the 817:899 aspect ratio. */
+    @media (min-width: 1440px) {
+      .page { padding: 0 30% 20px; }
+      .content-wrap { padding-top: 20px; }
+      .shelf {
+        width: min(100%, calc((100dvh - 250px) * (817 / 899)));
+        margin-left: auto;
+        margin-right: auto;
+      }
+    }
+
     /* ---- Header ---- */
     .site-header {
       margin-bottom: clamp(8px, 2vw, 24px);
