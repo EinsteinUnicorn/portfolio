@@ -13,20 +13,28 @@
       min-height: 100vh;
     }
 
+    /* Outer page — 15% side padding keeps shelf inset from viewport edges */
     .page {
-      max-width: 1165px;
+      padding: 0 15% 40px;
+    }
+
+    /* Content block — shelf + header, centred at any viewport width.
+       Max width matches the Figma shelf width (817px). */
+    .content-wrap {
+      max-width: 817px;
       margin: 0 auto;
-      padding: clamp(24px, 6vw, 80px) clamp(16px, 5vw, 60px);
+      padding-top: clamp(20px, 10.4vw, 121px); /* 10.4vw = 121px at 1165px viewport */
     }
 
     /* ---- Header ---- */
     .site-header {
-      margin-bottom: clamp(12px, 2.5vw, 32px);
+      margin-bottom: clamp(8px, 2vw, 24px);
+      padding-left: clamp(4px, 4.04%, 33px); /* Figma: text at 381px, shelf at 348px → 33px offset */
     }
 
     .name {
       font-family: 'Baskerville', 'Palatino Linotype', serif;
-      font-size: clamp(36px, 8.5vw, 96px);
+      font-size: clamp(32px, 8.2vw, 96px);
       font-weight: normal;
       color: #000;
       line-height: 1.05;
@@ -34,7 +42,7 @@
 
     .role {
       font-family: 'Futura', 'Century Gothic', sans-serif;
-      font-size: clamp(13px, 1.8vw, 24px);
+      font-size: clamp(12px, 2.1vw, 24px);
       font-weight: 500;
       color: #000;
       letter-spacing: 0.05em;
@@ -42,13 +50,12 @@
     }
 
     /* ---- Shelf ---- */
-    /* The shelf image is 817×899 — we lock that aspect ratio so items
-       positioned in % always land in the right shelf compartments */
     .shelf {
       position: relative;
       width: 100%;
       aspect-ratio: 817 / 899;
       overflow: hidden;
+      margin-top: clamp(8px, 2vw, 24px);
     }
 
     /* Replicate the exact Figma crop: the shelf image is larger than its
@@ -90,18 +97,18 @@
 
     /* Silver wearable device — top-left compartment */
     .proj-device {
-      left:   10.77%;
-      top:     9.5%;    /* pushed down to sit on shelf board */
-      width:  17.38%;
-      height: 25.25%;
+      left:   10.77%;  /* (436-348)/817 */
+      bottom: 68.74%;  /* (899-54-227)/899 */
+      width:  17.38%;  /* 142/817 */
+      height: 25.25%;  /* 227/899 */
     }
 
     /* Lamp — top-right compartment, slight rotation */
     .proj-pickleball {
-      left:   61.20%;
-      top:    14.3%;    /* shorter than puck so needs more offset to reach same board */
-      width:  22.89%;
-      height: 20.36%;   /* 183/899 */
+      left:   61.20%;  /* (848-348)/817 */
+      bottom: 73.58%;  /* (899-54-183)/899 */
+      width:  22.90%;  /* 187/817 */
+      height: 20.41%;  /* 183/899 */
       display: flex;
       align-items: center;
       justify-content: center;
@@ -115,18 +122,18 @@
 
     /* Twinkle Toes PCB — middle-left compartment */
     .proj-twinkle {
-      left:   14%;      /* shifted right to clear inner left frame */
-      top:    37.37%;
-      width:  19.71%;
-      height: 26.92%;
+      left:   9.67%;   /* (427-348)/817 */
+      bottom: 35.71%;  /* (899-336-242)/899 */
+      width:  19.71%;  /* 161/817 */
+      height: 26.92%;  /* 242/899 */
     }
 
     /* Braille printer — bottom-left */
     .proj-led {
-      left:   16%;      /* shifted right to clear inner left frame */
-      top:    72.52%;
-      width:  31.09%;   /* 254/817 */
-      height: 15.13%;   /* 136/899 */
+      left:   12.61%;  /* (451-348)/817 */
+      bottom: 12.35%;  /* (899-652-136)/899 */
+      width:  31.09%;  /* 254/817 */
+      height: 15.13%;  /* 136/899 */
       overflow: hidden;
     }
     .proj-led img {
@@ -141,7 +148,7 @@
     /* Tea app — bottom-right */
     .proj-tea {
       left:   54.59%;   /* (794-348)/817 */
-      top:    70.08%;   /* (918-288)/899 */
+      bottom: 12.35%;   /* anchored to shelf board */
       width:  33.78%;   /* 276/817 */
       height: 17.57%;   /* 158/899 */
       overflow: hidden;
@@ -233,15 +240,40 @@
       line-height: 1.65;
       color: #333;
     }
+
+    .modal-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .modal-link-btn {
+      font-family: 'Futura', 'Century Gothic', sans-serif;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #000;
+      border: 1px solid #000;
+      border-radius: 2px;
+      padding: 7px 16px;
+      text-decoration: none;
+      transition: background 0.15s ease, color 0.15s ease;
+    }
+    .modal-link-btn:hover {
+      background: #000;
+      color: #fff;
+    }
   </style>
 </head>
 <body>
 
 <div class="page">
+ <div class="content-wrap">
 
   <header class="site-header">
     <h1 class="name">Becky Button</h1>
-    <p class="role">Engineer</p>
   </header>
 
   <div class="shelf">
@@ -270,6 +302,7 @@
     </div>
   </div>
 
+ </div><!-- /.content-wrap -->
 </div>
 
 <!-- Modal -->
@@ -280,6 +313,7 @@
     <h2 class="modal-title" id="modal-title"></h2>
     <div class="modal-tags" id="modal-tags"></div>
     <p class="modal-desc" id="modal-desc"></p>
+    <div class="modal-links" id="modal-links"></div>
   </div>
 </div>
 
@@ -289,31 +323,37 @@
       image: "fdf3472b8e5757c0d00891bfd23f6e26236eea90.png",
       title: "Puck v0 - Era Labs",
       tags: ["PCB Design"],
-      description: "Designed the PCB for this wearble device "
+      description: "Custom PCB designed for a wearable — full schematic capture, component selection, and layout optimized for a compact form factor.",
+      link: { label: "Link", url: "https://era.world" }
     },
     pickleball: {
       image: "c52bd55dc40f4c41d59558c739b89c67c72d1523.png",
       title: "Lamp",
       tags: ["Fusion 360"],
-      description: "I designed this 3D printed lamp, thats all."
+      description: "Parametric lamp designed in Fusion 360 and 3D printed."
     },
     twinkle: {
       image: "2e9c956df68310be3393d81b1a1d2290e4c0c469.png",
       title: "Twinkle Toes",
       tags: ["PCB Design", "Firmware", "Synthesizer"],
-      description: "A foot shaped reprogrammable guitar pedal"
+      description: "Open-source, foot-shaped guitar pedal with a reprogrammable Daisy Seed Microcontroller. Custom PCB layout, hand assembly, and firmware.",
+      link: { label: "GitHub", url: "https://github.com/EinsteinUnicorn/TwinkleToes" }
     },
     led: {
       image: "aa6b4d617f01a3a42998798e122c8e8a02d0b8be.png",
       title: "Braille Printer",
       tags: ["Design", "Electrical Engineering"],
-      description: ""
+      description: "Electromechanical braille embosser prototype. I designed the electro-mechanical parts of this and in collaboration with a team, we developed the printing software stack."
     },
     tea: {
       image: "e617713c7713bde361e18ce07e459a3e6f1063e1.png",
       title: "Embroidery Digitizer",
       tags: ["Product Design", "UI/UX", "Full-Stack"],
-      description: "An embroidery digitizer that converts designs to embroidery patterns."
+      description: "Full-stack web app that converts design images into machine-readable embroidery files via a custom vectorization pipeline. React frontend, Node backend, live on Vercel.",
+      links: [
+        { label: "Live Project", url: "https://open-stitched.vercel.app" },
+        { label: "X", url: "https://x.com/becky_button/status/2040687970085167253?s=20" }
+      ]
     }
   };
 
@@ -322,6 +362,7 @@
   const modalTitle = document.getElementById("modal-title");
   const modalTags  = document.getElementById("modal-tags");
   const modalDesc  = document.getElementById("modal-desc");
+  const modalLinks = document.getElementById("modal-links");
 
   function openModal(key) {
     const p = projects[key];
@@ -331,6 +372,10 @@
     modalTitle.textContent = p.title;
     modalDesc.textContent  = p.description;
     modalTags.innerHTML = p.tags.map(t => `<span class="modal-tag">${t}</span>`).join("");
+    const allLinks = p.links || (p.link ? [p.link] : []);
+    modalLinks.innerHTML = allLinks.map(l =>
+      `<a class="modal-link-btn" href="${l.url}" target="_blank" rel="noopener noreferrer">${l.label}</a>`
+    ).join("");
     overlay.classList.add("open");
     document.body.style.overflow = "hidden";
   }
