@@ -45,3 +45,42 @@ Core content, anchor navigation, outbound links, and native details work without
 - Check local asset and anchor references.
 
 Before merging, review the new first-person copy and add actual project evidence for the three illustrated primary projects when available. This site deliberately presents no fabricated impact figures.
+
+## Design studio — customize without editing HTML
+
+Open `studio.html` through the local server, or open the standalone `portfolio-design-studio.html` output directly in your normal browser. The standalone studio contains the portfolio, images, and all editor code; it needs no installation or internet connection for editing.
+
+1. **Design:** try Notebook, Cabinet, or Gallery, then adjust headline/body type, colors, headline size, section spacing, page width, opening composition, index style, project layout, detail expansion, and section backgrounds. Presets preserve writing and uploaded images.
+2. **Writing:** select a section and edit its headlines, summaries, descriptions, or case-study paragraphs. About & contact also contains outbound URLs. Input is plain text; line breaks are supported.
+3. **Projects:** move projects up/down, hide them, override their layout individually, or replace the original visual with your own PNG/JPEG/WebP/GIF (up to 4 MB each). Add an accessible image description and a visible caption. Restore original visual brings the illustration back.
+4. Use **Compare original** to view the repository's default settings temporarily. **Undo** restores recent edits; **Reset draft** restores the default and can itself be undone.
+5. **Download website** creates a portable HTML site with your current settings and embedded images. **Save editable backup** downloads JSON that can be imported into the studio later. Save named looks in **Save, restore & apply** to compare up to eight variations.
+
+Drafts and named looks are stored only in this browser when storage is available. They do not sync across devices, edit repository files, or publish the site. Large image collections may exceed browser storage; the editor reports this and keeps the current draft in memory so you can export a backup. Backups are the reliable way to move work between browsers.
+
+### Applying edits to the repository
+
+`portfolio.config.js` is the authoritative editable configuration for the JavaScript-enabled site: writing, links, design tokens, and project order/visibility/image choices. Download repository settings from the studio and replace this file on the review branch, then commit/push. Do not paste the downloaded settings into a CSS file. The existing `index.html` supplies the semantic page structure and original no-JavaScript content fallback; the runtime applies your current configuration.
+
+`design-system.css` holds the adjustable design rules, layout variants, and font choices. `styles.css` remains the base component styling. Add new font choices in both `portfolio-runtime.js` and `studio.js`; all existing fonts are system fonts, so no external requests are needed.
+
+`studio.html`, `studio.css`, and `studio.js` are the editing interface, separate from the public page. The studio is not linked from the public portfolio and is marked `noindex`. It is not an authenticated CMS: anyone who opens it can edit their own local copy, but it provides no server write or publishing endpoint. No private content or credentials belong in the public repository.
+
+### Portable outputs and checks
+
+Generate both the standalone site and standalone editor with the standard Python library:
+
+```sh
+python3 tools/build-preview.py --output ../outputs
+```
+
+Run the meaningful configuration/import/export tests and syntax checks:
+
+```sh
+node --test tests/config.test.cjs
+node --check studio.js
+node --check portfolio-runtime.js
+git diff --check
+```
+
+The tests cover customization round trips, project ordering and duplicate handling, malformed imports, URL/CSS/image validation, and script-like text escaping. Browser checks additionally cover live presets, writing, comparison, reorder/hide, uploads, draft persistence, and downloadable files. The contrast hint covers page text against page background; review other color combinations visually when changing them.

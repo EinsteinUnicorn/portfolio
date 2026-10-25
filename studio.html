@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Becky's portfolio — Design studio</title>
+  <link rel="icon" href="assets/favicon.svg">
+  <link rel="stylesheet" href="studio.css">
+  <script src="portfolio.config.js" defer></script>
+  <script src="config-utils.js" defer></script>
+  <script src="studio.js" defer></script>
+</head>
+<body>
+  <header class="studio-header">
+    <div><h1>Becky’s workbench <span>Portfolio design studio</span></h1><p id="save-status" role="status">Your changes stay here until you export them.</p></div>
+    <div class="actions"><button id="undo" disabled>Undo</button><button id="reset">Reset draft</button><button id="download-backup">Save editable backup</button><button class="primary" id="download-site">Download website ↗</button></div>
+  </header>
+  <main class="workspace">
+    <aside class="editor" aria-label="Portfolio editor">
+      <nav class="editor-tabs" aria-label="Editor sections"><button data-tab="design" aria-pressed="true">Design</button><button data-tab="writing" aria-pressed="false">Writing</button><button data-tab="projects" aria-pressed="false">Projects</button></nav>
+      <div id="panel"></div>
+      <details class="save-tools"><summary>Save, restore & apply</summary><p>Changes are saved in this browser when storage is available. A backup preserves your writing, images, and design choices.</p><label>Saved look name<input id="look-name" placeholder="Sunday notebook" maxlength="60"></label><button id="save-look">Save this look</button><label>Saved looks<select id="saved-looks"><option value="">Choose a saved look…</option></select></label><button id="load-look">Load selected look</button><label class="file-label">Import a backup<input id="import-backup" type="file" accept="application/json,.json"></label><button id="download-config">Download repository settings</button><p>To apply your edits to the source, replace <code>portfolio.config.js</code> with the downloaded settings, then commit to your review branch. Nothing here publishes your site.</p></details>
+    </aside>
+    <section class="preview-area" aria-label="Live portfolio preview">
+      <div class="preview-toolbar"><div class="sizes" role="group" aria-label="Preview width"><button data-width="100%" aria-pressed="true">Fit</button><button data-width="1024px" aria-pressed="false">Desktop</button><button data-width="768px" aria-pressed="false">Tablet</button><button data-width="390px" aria-pressed="false">Phone</button></div><label class="compare"><input type="checkbox" id="compare"> Compare original</label></div>
+      <div class="preview-scroll"><iframe title="Your portfolio — live preview" id="preview" sandbox="allow-scripts allow-same-origin"></iframe></div>
+      <p class="preview-note" id="preview-status" role="status">Loading the portfolio…</p>
+    </section>
+  </main>
+  <noscript>This design studio needs JavaScript. The portfolio itself still contains readable project stories without it.</noscript>
+</body>
+</html>
