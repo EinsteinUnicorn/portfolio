@@ -1,419 +1,92 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Becky Button</title>
-  <!-- Preload all images so the browser fetches them immediately on parse -->
-  <link rel="preload" as="image" href="15e05ee9c5a6f8ea807161f338e129a3e200f260.png">
-  <link rel="preload" as="image" href="fdf3472b8e5757c0d00891bfd23f6e26236eea90.png">
-  <link rel="preload" as="image" href="c52bd55dc40f4c41d59558c739b89c67c72d1523.png">
-  <link rel="preload" as="image" href="2e9c956df68310be3393d81b1a1d2290e4c0c469.png">
-  <link rel="preload" as="image" href="aa6b4d617f01a3a42998798e122c8e8a02d0b8be.png">
-  <link rel="preload" as="image" href="e617713c7713bde361e18ce07e459a3e6f1063e1.png">
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      background: #fff;
-      font-family: sans-serif;
-      min-height: 100vh;
-    }
-
-    /* Outer page — 15% side padding keeps shelf inset from viewport edges */
-    .page {
-      padding: 0 15% 40px;
-    }
-
-    /* Content block — shelf + header, centred at any viewport width.
-       Max width matches the Figma shelf width (817px). */
-    .content-wrap {
-      max-width: 817px;
-      margin: 0 auto;
-      padding-top: clamp(20px, 10.4vw, 121px); /* 10.4vw = 121px at 1165px viewport */
-    }
-
-    /* 14" MacBook Pro (~1440px+): 30% padding. Shelf width is capped so the
-       full shelf (+ header) fits in the viewport without scrolling.
-       calc: available height minus ~250px of header/spacing, converted to
-       the equivalent shelf width via the 817:899 aspect ratio. */
-    @media (min-width: 1440px) {
-      .page { padding: 0 30% 20px; }
-      .content-wrap { padding-top: 20px; }
-      .shelf {
-        width: min(100%, calc((100dvh - 250px) * (817 / 899)));
-        margin-left: auto;
-        margin-right: auto;
-      }
-    }
-
-    /* ---- Header ---- */
-    .site-header {
-      margin-bottom: clamp(8px, 2vw, 24px);
-      padding-left: clamp(4px, 4.04%, 33px); /* Figma: text at 381px, shelf at 348px → 33px offset */
-    }
-
-    .name {
-      font-family: 'Baskerville', 'Palatino Linotype', serif;
-      font-size: clamp(32px, 8.2vw, 96px);
-      font-weight: normal;
-      color: #000;
-      line-height: 1.05;
-    }
-
-    .role {
-      font-family: 'Futura', 'Century Gothic', sans-serif;
-      font-size: clamp(12px, 2.1vw, 24px);
-      font-weight: 500;
-      color: #000;
-      letter-spacing: 0.05em;
-      margin-top: 0.15em;
-    }
-
-    /* ---- Shelf ---- */
-    .shelf {
-      position: relative;
-      width: 100%;
-      aspect-ratio: 817 / 899;
-      overflow: hidden;
-      margin-top: clamp(8px, 2vw, 24px);
-    }
-
-    /* Replicate the exact Figma crop: the shelf image is larger than its
-       container and positioned with specific offsets — percentages keep
-       this identical at every viewport width. */
-    .shelf-bg {
-      position: absolute;
-      width: 126.32%;
-      height: 114.67%;
-      left: -13.71%;
-      top: -8.4%;
-      pointer-events: none;
-      display: block;
-    }
-
-    /* ---- Project items (% coords relative to shelf) ----
-       All values derived from Figma px positions offset by the shelf origin (348, 288).
-       left%  = (item_left  - 348) / 817
-       top%   = (item_top   - 288) / 899
-       width% = item_width  / 817
-       height%= item_height / 899                          */
-
-    .project-item {
-      position: absolute;
-      cursor: pointer;
-      transition: transform 0.18s ease, filter 0.18s ease;
-    }
-    .project-item:hover {
-      transform: scale(1.07);
-      filter: brightness(1.08) drop-shadow(0 4px 12px rgba(0,0,0,0.18));
-      z-index: 10;
-    }
-    .project-item img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
-
-    /* Silver wearable device — top-left compartment */
-    .proj-device {
-      left:   10.77%;  /* (436-348)/817 */
-      bottom: 68.74%;  /* (899-54-227)/899 */
-      width:  17.38%;  /* 142/817 */
-      height: 25.25%;  /* 227/899 */
-    }
-
-    /* Lamp — top-right compartment, slight rotation */
-    .proj-pickleball {
-      left:   61.20%;  /* (848-348)/817 */
-      bottom: 73.58%;  /* (899-54-183)/899 */
-      width:  22.90%;  /* 187/817 */
-      height: 20.41%;  /* 183/899 */
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .proj-pickleball .inner {
-      transform: rotate(4.49deg);
-      width: 93%;
-      height: 93%;
-    }
-    .proj-pickleball .inner img { object-fit: cover; }
-
-    /* Twinkle Toes PCB — middle-left compartment */
-    .proj-twinkle {
-      left:   9.67%;   /* (427-348)/817 */
-      bottom: 35.71%;  /* (899-336-242)/899 */
-      width:  19.71%;  /* 161/817 */
-      height: 26.92%;  /* 242/899 */
-    }
-
-    /* Braille printer — bottom-left */
-    .proj-led {
-      left:   12.61%;  /* (451-348)/817 */
-      bottom: 12.35%;  /* (899-652-136)/899 */
-      width:  31.09%;  /* 254/817 */
-      height: 15.13%;  /* 136/899 */
-      overflow: hidden;
-    }
-    .proj-led img {
-      position: absolute;
-      width: 106.36%;
-      height: 166.31%;
-      left: -6.36%;
-      top: -38.35%;
-      object-fit: cover;
-    }
-
-    /* Tea app — bottom-right */
-    .proj-tea {
-      left:   54.59%;   /* (794-348)/817 */
-      bottom: 12.35%;   /* anchored to shelf board */
-      width:  33.78%;   /* 276/817 */
-      height: 17.57%;   /* 158/899 */
-      overflow: hidden;
-    }
-    .proj-tea img {
-      position: absolute;
-      width: 100%;
-      height: 109.97%;
-      left: 0;
-      top: -9.97%;
-    }
-
-    /* ---- Modal ---- */
-    .modal-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.55);
-      z-index: 100;
-      align-items: center;
-      justify-content: center;
-      padding: 16px;
-    }
-    .modal-overlay.open { display: flex; }
-
-    .modal {
-      background: #fff;
-      border-radius: 4px;
-      max-width: 560px;
-      width: 100%;
-      max-height: 90vh;
-      overflow-y: auto;
-      padding: clamp(24px, 5vw, 44px);
-      position: relative;
-      box-shadow: 0 8px 40px rgba(0,0,0,0.18);
-    }
-
-    .modal-close {
-      position: absolute;
-      top: 14px;
-      right: 18px;
-      background: none;
-      border: none;
-      font-size: 22px;
-      cursor: pointer;
-      color: #555;
-      line-height: 1;
-      padding: 4px;
-    }
-    .modal-close:hover { color: #000; }
-
-    .modal-image {
-      width: 100%;
-      max-height: 220px;
-      object-fit: contain;
-      margin-bottom: 20px;
-      display: block;
-    }
-
-    .modal-title {
-      font-family: 'Baskerville', 'Palatino Linotype', serif;
-      font-size: clamp(22px, 4vw, 32px);
-      font-weight: normal;
-      color: #000;
-      margin-bottom: 8px;
-    }
-
-    .modal-tags {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      margin-bottom: 14px;
-    }
-    .modal-tag {
-      font-family: 'Futura', 'Century Gothic', sans-serif;
-      font-size: 11px;
-      font-weight: 500;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: #666;
-      border: 1px solid #ccc;
-      border-radius: 2px;
-      padding: 3px 8px;
-    }
-
-    .modal-desc {
-      font-family: Georgia, 'Times New Roman', serif;
-      font-size: clamp(14px, 2vw, 16px);
-      line-height: 1.65;
-      color: #333;
-    }
-
-    .modal-links {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 18px;
-    }
-
-    .modal-link-btn {
-      font-family: 'Futura', 'Century Gothic', sans-serif;
-      font-size: 11px;
-      font-weight: 500;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: #000;
-      border: 1px solid #000;
-      border-radius: 2px;
-      padding: 7px 16px;
-      text-decoration: none;
-      transition: background 0.15s ease, color 0.15s ease;
-    }
-    .modal-link-btn:hover {
-      background: #000;
-      color: #fff;
-    }
-  </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f7f3e9">
+  <title>Becky Button — Creative Technologist & Research Prototyper</title>
+  <meta name="description" content="Becky Button builds playful, useful interfaces between people, AI, and the physical world. Explore voice objects, a tea tray synthesizer, circuit tools, and embroidery software.">
+  <meta property="og:title" content="Becky Button — Ideas you can pick up.">
+  <meta property="og:description" content="Creative technology, AI experiments, and physical interfaces. A shelf of working questions.">
+  <meta property="og:type" content="website">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+  <script src="script.js" defer></script>
 </head>
 <body>
-
-<div class="page">
- <div class="content-wrap">
-
-  <header class="site-header">
-    <h1 class="name">Becky Button</h1>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header wrap">
+    <a class="wordmark" href="#" aria-label="Becky Button, home">becky button<span class="button-mark" aria-hidden="true">⁙</span></a>
+    <nav aria-label="Main navigation"><a href="#work">Selected work <span>↙</span></a><a href="#about">About</a><a class="contact-nav" href="#contact">Let’s talk <span>↗</span></a></nav>
   </header>
-
-  <div class="shelf">
-    <img class="shelf-bg" src="15e05ee9c5a6f8ea807161f338e129a3e200f260.png" alt="" />
-
-    <div class="project-item proj-device" data-project="device">
-      <img src="fdf3472b8e5757c0d00891bfd23f6e26236eea90.png" alt="Wearable device" />
-    </div>
-
-    <div class="project-item proj-pickleball" data-project="pickleball">
-      <div class="inner">
-        <img src="c52bd55dc40f4c41d59558c739b89c67c72d1523.png" alt="Pickleball sensor" />
+  <main id="main">
+    <section class="hero wrap" aria-labelledby="hero-title">
+      <div class="hero-copy">
+        <p class="eyebrow"><span class="dot"></span> Creative technologist · Research prototyper</p>
+        <h1 id="hero-title">Ideas you<br>can <em>pick up.</em></h1>
+        <p class="intro">I’m Becky. I build playful, useful interfaces between people, <strong>AI, and the physical world.</strong></p>
+        <p class="hero-note">Sometimes that’s an object you talk to.<br>Sometimes it’s a tea tray that makes music.</p>
+        <a class="pill" href="#work">Explore my experiments <span aria-hidden="true">↓</span></a>
       </div>
-    </div>
-
-    <div class="project-item proj-twinkle" data-project="twinkle">
-      <img src="2e9c956df68310be3393d81b1a1d2290e4c0c469.png" alt="Twinkle Toes PCB" />
-    </div>
-
-    <div class="project-item proj-led" data-project="led">
-      <img src="aa6b4d617f01a3a42998798e122c8e8a02d0b8be.png" alt="LED matrix panel" />
-    </div>
-
-    <div class="project-item proj-tea" data-project="tea">
-      <img src="e617713c7713bde361e18ce07e459a3e6f1063e1.png" alt="Tea sourcing app" />
-    </div>
-  </div>
-
- </div><!-- /.content-wrap -->
-</div>
-
-<!-- Modal -->
-<div class="modal-overlay" id="modal-overlay" role="dialog" aria-modal="true">
-  <div class="modal" id="modal">
-    <button class="modal-close" id="modal-close" aria-label="Close">&#x2715;</button>
-    <img class="modal-image" id="modal-image" src="" alt="" />
-    <h2 class="modal-title" id="modal-title"></h2>
-    <div class="modal-tags" id="modal-tags"></div>
-    <p class="modal-desc" id="modal-desc"></p>
-    <div class="modal-links" id="modal-links"></div>
-  </div>
-</div>
-
-<script>
-  const projects = {
-    device: {
-      image: "fdf3472b8e5757c0d00891bfd23f6e26236eea90.png",
-      title: "Puck v0 - Era Labs",
-      tags: ["PCB Design"],
-      description: "Custom PCB designed for a wearable — full schematic capture, component selection, and layout optimized for a compact form factor.",
-      link: { label: "Link", url: "https://era.world" }
-    },
-    pickleball: {
-      image: "c52bd55dc40f4c41d59558c739b89c67c72d1523.png",
-      title: "Lamp",
-      tags: ["Fusion 360"],
-      description: "Parametric lamp designed in Fusion 360 and 3D printed."
-    },
-    twinkle: {
-      image: "2e9c956df68310be3393d81b1a1d2290e4c0c469.png",
-      title: "Twinkle Toes",
-      tags: ["PCB Design", "Firmware", "Synthesizer"],
-      description: "Open-source, foot-shaped guitar pedal with a reprogrammable Daisy Seed Microcontroller. Custom PCB layout, hand assembly, and firmware.",
-      link: { label: "GitHub", url: "https://github.com/EinsteinUnicorn/TwinkleToes" }
-    },
-    led: {
-      image: "aa6b4d617f01a3a42998798e122c8e8a02d0b8be.png",
-      title: "Braille Printer",
-      tags: ["Design", "Electrical Engineering"],
-      description: "Electromechanical braille embosser prototype. I designed the electro-mechanical parts of this and in collaboration with a team, we developed the printing software stack."
-    },
-    tea: {
-      image: "e617713c7713bde361e18ce07e459a3e6f1063e1.png",
-      title: "Embroidery Digitizer",
-      tags: ["Product Design", "UI/UX", "Full-Stack"],
-      description: "Full-stack web app that converts design images into machine-readable embroidery files via a custom vectorization pipeline. React frontend, Node backend, live on Vercel.",
-      links: [
-        { label: "Live Project", url: "https://open-stitched.vercel.app" },
-        { label: "X", url: "https://x.com/becky_button/status/2040687970085167253?s=20" }
-      ]
-    }
-  };
-
-  const overlay  = document.getElementById("modal-overlay");
-  const modalImg = document.getElementById("modal-image");
-  const modalTitle = document.getElementById("modal-title");
-  const modalTags  = document.getElementById("modal-tags");
-  const modalDesc  = document.getElementById("modal-desc");
-  const modalLinks = document.getElementById("modal-links");
-
-  function openModal(key) {
-    const p = projects[key];
-    if (!p) return;
-    modalImg.src = p.image;
-    modalImg.alt = p.title;
-    modalTitle.textContent = p.title;
-    modalDesc.textContent  = p.description;
-    modalTags.innerHTML = p.tags.map(t => `<span class="modal-tag">${t}</span>`).join("");
-    const allLinks = p.links || (p.link ? [p.link] : []);
-    modalLinks.innerHTML = allLinks.map(l =>
-      `<a class="modal-link-btn" href="${l.url}" target="_blank" rel="noopener noreferrer">${l.label}</a>`
-    ).join("");
-    overlay.classList.add("open");
-    document.body.style.overflow = "hidden";
-  }
-
-  function closeModal() {
-    overlay.classList.remove("open");
-    document.body.style.overflow = "";
-  }
-
-  document.querySelectorAll(".project-item").forEach(el => {
-    el.addEventListener("click", () => openModal(el.dataset.project));
-  });
-
-  document.getElementById("modal-close").addEventListener("click", closeModal);
-  overlay.addEventListener("click", e => { if (e.target === overlay) closeModal(); });
-  document.addEventListener("keydown", e => { if (e.key === "Escape") closeModal(); });
-</script>
-
+      <div class="cabinet-scene">
+        <span class="handwritten cabinet-note">a few things from my shelf</span>
+        <div class="cabinet">
+          <img class="shelf" src="assets/shelf.webp" width="800" height="800" alt="">
+          <a href="#more-work" class="shelf-object shelf-puck" aria-label="Puck v0, wearable PCB — see more work"><img src="assets/puck.webp" alt="Silver Puck v0 wearable" width="499" height="800"><span>wearable hardware ↙</span></a>
+          <a href="#more-work" class="shelf-object shelf-lamp" aria-label="3D printed lamp — see more work"><img src="assets/lamp.webp" alt="Yellow spherical lamp" width="800" height="782"><span>objects with character ↙</span></a>
+          <a href="#more-work" class="shelf-object shelf-pedal" aria-label="Twinkle Toes guitar pedal — see more work"><img src="assets/twinkle-toes.webp" alt="Foot-shaped Twinkle Toes circuit board" width="532" height="800"><span>playable electronics ↙</span></a>
+          <a href="#embroidery" class="shelf-object shelf-stitch" aria-label="Open Stitch embroidery tool — read project"><img src="assets/embroidery.webp" alt="Open Stitch embroidery design interface" width="1600" height="1004"><span>tools for making ↙</span></a>
+          <span class="cabinet-label">CURIOSITY, MADE TANGIBLE.</span>
+        </div>
+        <p class="small cabinet-caption">Real objects. Working software. Room for another idea.</p>
+      </div>
+    </section>
+    <section id="work" class="work-index wrap" aria-labelledby="work-title">
+      <div class="section-heading"><h2 id="work-title">A shelf of working questions.</h2><span class="eyebrow">Selected experiments / 01—04</span></div>
+      <div class="index-grid">
+        <a href="#intention"><span class="index-number">01 / AI + everyday life</span><strong>What if a thought<br>had somewhere to go?</strong><span>Handheld intention capture <b>↘</b></span></a>
+        <a href="#tea"><span class="index-number">02 / Ritual + sound</span><strong>What if making tea<br>made music?</strong><span>Gongfu tea tray synthesizer <b>↘</b></span></a>
+        <a href="#circuits"><span class="index-number">03 / Code + electronics</span><strong>What if a circuit could<br>start with play?</strong><span>CMOS simulator → KiCad <b>↘</b></span></a>
+        <a href="#embroidery"><span class="index-number">04 / Software + craft</span><strong>What if the tool got<br>out of the way?</strong><span>Open Stitch embroidery <b>↘</b></span></a>
+      </div>
+    </section>
+    <section class="project intention wrap" id="intention" aria-labelledby="intention-title">
+      <div class="project-top"><span class="eyebrow">01 / Handheld AI note taker</span><span class="project-type">AI interaction · Physical interface</span></div>
+      <div class="project-grid">
+        <div class="project-copy"><h2 id="intention-title">A place for your<br><em>passing thoughts.</em></h2><p class="project-lead">Hold an object. Say what’s on your mind. Give that thought a useful next step.</p><p>I built a handheld note-taking system that categorizes speech into <strong>actions, shopping items, or calendar intentions.</strong> It explores how AI can fit into an everyday gesture, beyond a chat window.</p><div class="flow"><span>Speak</span><i>→</i><span>Categorize</span><i>→</i><span>Act later</span></div>
+        <details><summary>Inside the experiment <span aria-hidden="true">+</span></summary><div class="detail-body"><h3>The question</h3><p>Can a physical object make capturing an intention feel as immediate as saying it?</p><h3>What I built</h3><p>A handheld interface and speech categorization workflow, connecting an ordinary human action to structured information.</p><h3>What it explores</h3><p>A smaller, more intentional interaction with AI: capture a thought now, organize it for later.</p></div></details></div>
+        <figure class="voice-demo"><figcaption class="visual-label">Interaction sketch <span>Try an example ↓</span></figcaption><div class="voice-quote" id="voice-quote">“Remind me to finish<br>the circuit board.”</div><div class="waveform" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="voice-route"><span aria-hidden="true">↳</span><div><span class="small">A thought becomes</span><strong id="voice-result" aria-live="polite">An action</strong></div><span class="route-icon" id="route-icon" aria-hidden="true">✓</span></div><div class="example-buttons" role="group" aria-label="Example intentions"><button type="button" data-example="action" aria-pressed="true">An action</button><button type="button" data-example="shopping" aria-pressed="false">A shopping item</button><button type="button" data-example="calendar" aria-pressed="false">A calendar intention</button></div><p class="visual-footnote">Illustrative examples, not live AI. No microphone or data collection.</p></figure>
+      </div>
+    </section>
+    <section class="tea-section" id="tea" aria-labelledby="tea-title"><div class="wrap">
+      <div class="project-top"><span class="eyebrow">02 / Gongfu tea tray synthesizer</span><span class="project-type">Creative coding · Sound · Physical computing</span></div>
+      <div class="tea-heading"><h2 id="tea-title">A little tea.<br><em>A little noise.</em></h2><div><p class="project-lead">An everyday ritual becomes an instrument.</p><p>I built an interactive gongfu tea tray synthesizer, using AI as part of the making process. It brings together two things I love: tea and playful electronics.</p></div></div>
+      <figure class="tea-playground"><figcaption class="visual-label">An invitation to play <span>Browser sound sketch / not a recording of the hardware</span></figcaption><div class="tea-objects" role="group" aria-label="Play three synthesized tones">
+        <button class="tea-object" data-frequency="261.63" aria-label="Play low tea cup tone"><svg viewBox="0 0 200 170" aria-hidden="true"><path class="steam" d="M83 50q-15-16 0-28M105 40q-15-16 0-28"/><ellipse cx="95" cy="144" rx="78" ry="15" fill="#af855a"/><path d="M30 65h125l-13 59q-45 30-98 0z" fill="#eddcbb"/><ellipse cx="92" cy="65" rx="63" ry="19" fill="#fff0d0"/><ellipse cx="92" cy="65" rx="49" ry="11" fill="#a55c32"/><path d="M155 75q45-5 23 32l-29 7" fill="none" stroke="#eddcbb" stroke-width="12"/></svg><span>01 / Sip <b>↗</b></span></button>
+        <button class="tea-object teapot" data-frequency="329.63" aria-label="Play middle teapot tone"><svg viewBox="0 0 240 200" aria-hidden="true"><path d="M175 90q75-40 45 25l-35 35" fill="none" stroke="#c8794a" stroke-width="15"/><path d="M63 91L9 61l33 67 35 24" fill="#a95736"/><path d="M62 87q53-23 110 0l25 64q-66 51-151 0z" fill="#c8794a"/><ellipse cx="117" cy="85" rx="57" ry="17" fill="#e29e6c"/><path d="M82 78q34-43 70 0" fill="#c8794a"/><ellipse cx="116" cy="51" rx="12" ry="9" fill="#edaf7d"/><path d="M73 111q-10 21 0 33" stroke="#e29e6c" stroke-width="6" fill="none"/></svg><span>02 / Steep <b>↗</b></span></button>
+        <button class="tea-object" data-frequency="392" aria-label="Play high tea cup tone"><svg viewBox="0 0 200 170" aria-hidden="true"><path class="steam" d="M83 50q-15-16 0-28M105 40q-15-16 0-28"/><ellipse cx="100" cy="144" rx="78" ry="15" fill="#af855a"/><path d="M37 67h126l-13 61q-50 28-100 0z" fill="#a6b494"/><ellipse cx="100" cy="67" rx="63" ry="19" fill="#dbe0c7"/><ellipse cx="100" cy="67" rx="49" ry="11" fill="#a55c32"/></svg><span>03 / Repeat <b>↗</b></span></button>
+      </div><div class="tray-line" aria-hidden="true"></div><div class="tea-caption"><span id="sound-status" aria-live="polite">Tap a vessel to play a tone. Sound starts only when you choose.</span><span class="handwritten">please play with your tea.</span></div></figure>
+      <details><summary>Inside the experiment <span aria-hidden="true">+</span></summary><div class="detail-body"><h3>The question</h3><p>What happens when the familiar setting of a tea ritual becomes a playful musical interface?</p><h3>What I built</h3><p>An interactive gongfu tea tray synthesizer, developed with some AI assistance. The ritual itself is the starting point for the interface.</p><h3>What it explores</h3><p>How physical context can suggest a different way to interact with sound. The vessels above are a new browser illustration of that idea, not a recreation of the original hardware mappings.</p></div></details>
+    </div></section>
+    <section class="project circuits wrap" id="circuits" aria-labelledby="circuits-title">
+      <div class="project-top"><span class="eyebrow">03 / CMOS circuit simulator</span><span class="project-type">Interactive tools · Electronics · AI-assisted development</span></div>
+      <div class="project-grid"><div class="project-copy"><h2 id="circuits-title">Try the circuit.<br><em>Then make it real.</em></h2><p class="project-lead">A shorter path from “what if?” to a schematic you can work with.</p><p>I built an interactive simulator for trying different CMOS components, with <strong>schematic export to KiCad.</strong> It connects hands-on exploration to the tools used to design real electronics.</p><div class="flow"><span>Explore</span><i>→</i><span>Simulate</span><i>→</i><span>Export</span></div><details><summary>Inside the experiment <span aria-hidden="true">+</span></summary><div class="detail-body"><h3>The question</h3><p>Can experimenting with components and making a usable schematic feel like one continuous process?</p><h3>What I built</h3><p>An interactive CMOS circuit simulation tool that produces a KiCad schematic, developed with AI as part of the project workflow.</p><h3>What it explores</h3><p>Creative tooling that keeps an exploratory interface connected to a practical engineering output.</p></div></details></div>
+        <figure class="circuit-visual"><figcaption class="visual-label">From possibility to a working file <span>Workflow illustration</span></figcaption><div class="circuit-paper"><span class="eyebrow">01 — Test an idea</span><svg viewBox="0 0 420 200" role="img" aria-label="Conceptual logic diagram: two inputs enter a logic gate and produce an output"><g fill="none" stroke="currentColor" stroke-width="2"><path d="M40 66h110M40 134h110M150 45h45a55 55 0 0 1 0 110h-45zM250 100h130"/><circle cx="35" cy="66" r="5"/><circle cx="35" cy="134" r="5"/><circle cx="385" cy="100" r="5"/></g><g fill="currentColor" font-family="monospace" font-size="16"><text x="20" y="43">A</text><text x="20" y="168">B</text><text x="358" y="78">OUT</text></g></svg><div class="chip-row"><span>CMOS components</span><span>Interactive simulation</span></div></div><div class="export-arrow" aria-hidden="true">↓</div><div class="kicad-file"><span class="file-icon" aria-hidden="true">⌘</span><div><strong>02 — Keep building in KiCad</strong><span>Export a schematic for the next step</span></div><span aria-hidden="true">↗</span></div><p class="visual-footnote">Conceptual diagram; not a screenshot or embedded simulator.</p></figure>
+      </div>
+    </section>
+    <section class="embroidery-section" id="embroidery" aria-labelledby="embroidery-title"><div class="wrap">
+      <div class="project-top"><span class="eyebrow">04 / Open Stitch</span><span class="project-type">Product design · Full-stack · Creative tools</span></div>
+      <div class="embroidery-heading"><h2 id="embroidery-title">Less software wrestling.<br><em>More making.</em></h2><div><p class="project-lead">From a design to an embroidery machine, without the Inkscape detour.</p><p>I built a simpler interface for generating machine-readable embroidery files, with a custom vectorization pipeline connecting a React frontend and Node backend.</p><a class="text-link" href="https://open-stitched.vercel.app" target="_blank" rel="noopener noreferrer">Explore Open Stitch <span aria-hidden="true">↗</span><span class="sr-only"> (opens in a new tab)</span></a></div></div>
+      <figure class="stitch-figure"><div class="browser-bar"><span aria-hidden="true">● ● ●</span><span>Open Stitch / Design → stitch</span><span>↗</span></div><img src="assets/embroidery.webp" width="1600" height="1004" loading="lazy" alt="Open Stitch’s actual interface showing a tea emblem, vector paths, stitch types, and run thickness controls."><figcaption>Actual project interface <span>A tool that meets people at the thing they want to make.</span></figcaption></figure>
+      <details><summary>Inside the experiment <span aria-hidden="true">+</span></summary><div class="detail-body"><h3>The question</h3><p>Why should using an embroidery machine require navigating a separate vector-design application first?</p><h3>What I built</h3><p>A full-stack design-to-file workflow with a custom vectorization pipeline. The interface brings design and stitch controls into one place.</p><h3>What it explores</h3><p>Removing friction between creative intent and a physical output. The work combines product design, UI/UX, and full-stack development.</p><a class="text-link" href="https://x.com/becky_button/status/2040687970085167253?s=20" target="_blank" rel="noopener noreferrer">See the project post ↗<span class="sr-only"> (opens in a new tab)</span></a></div></details>
+    </div></section>
+    <section class="more-work wrap" id="more-work" aria-labelledby="more-title"><div class="section-heading"><h2 id="more-title">Also on the shelf.</h2><span class="eyebrow">A few more ways I make</span></div><div class="extras-grid">
+      <article><div class="extra-image"><img src="assets/puck.webp" width="499" height="800" loading="lazy" alt="Silver Puck v0 wearable enclosure"></div><span class="eyebrow">Wearable hardware</span><h3>Puck v0 · Era Labs</h3><p>Custom PCB design for a compact wearable: schematic capture, component selection, and layout.</p><a class="text-link" href="https://era.world" target="_blank" rel="noopener noreferrer">Visit Era ↗<span class="sr-only"> (opens in a new tab)</span></a></article>
+      <article><div class="extra-image"><img src="assets/twinkle-toes.webp" width="532" height="800" loading="lazy" alt="Twinkle Toes foot-shaped guitar pedal PCB with colorful controls"></div><span class="eyebrow">PCB + firmware + sound</span><h3>Twinkle Toes</h3><p>An open-source, foot-shaped guitar pedal. Custom PCB, hand assembly, and firmware on a Daisy Seed.</p><a class="text-link" href="https://github.com/EinsteinUnicorn/TwinkleToes" target="_blank" rel="noopener noreferrer">Explore the source ↗<span class="sr-only"> (opens in a new tab)</span></a></article>
+      <article><div class="extra-image"><img src="assets/lamp.webp" width="800" height="782" loading="lazy" alt="Yellow 3D printed spherical lamp with round openings"></div><span class="eyebrow">Digital fabrication</span><h3>A lamp with character</h3><p>A parametric lamp designed in Fusion 360 and brought into the world with 3D printing.</p></article>
+    </div></section>
+    <section class="about-section" id="about" aria-labelledby="about-title"><div class="wrap about-grid"><div><span class="eyebrow">A little about my practice</span><h2 id="about-title">Serious curiosity.<br><em>Playful outcomes.</em></h2></div><div><p class="project-lead">I think by making things.</p><p>My projects move between circuits, code, sound, and everyday rituals. I’m interested in what happens when an idea leaves the screen and becomes something a person can actually use.</p><p>I use AI as part of the prototyping process, and explore AI as part of the interface itself. Across both, the question stays human: <strong>what could this let someone do?</strong></p><p class="opportunity">I’m interested in creative technology and research prototyping roles with teams exploring new ways to interact with AI.</p></div></div></section>
+    <footer class="wrap" id="contact"><div class="footer-top"><div><span class="eyebrow">Have an interesting “what if”?</span><h2>Let’s make<br><em>something tangible.</em></h2></div><a class="contact-circle" href="https://x.com/becky_button" target="_blank" rel="noopener noreferrer">Say hello<br>on X <span aria-hidden="true">↗</span><span class="sr-only"> (opens in a new tab)</span></a></div><div class="footer-bottom"><span>Becky Button · Curiosity, made tangible.</span><div><a href="https://github.com/EinsteinUnicorn" target="_blank" rel="noopener noreferrer">GitHub ↗<span class="sr-only"> (opens in a new tab)</span></a><a href="#">Back to the shelf ↑</a></div></div></footer>
+  </main>
 </body>
 </html>
